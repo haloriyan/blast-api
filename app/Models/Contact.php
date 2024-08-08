@@ -10,7 +10,7 @@ class Contact extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id', 'name', 'whatsapp', 'email', 'groups'
+        'user_id', 'name', 'whatsapp', 'email', 'groups', 'country_code'
     ];
 
     public function groupsJoined() {
