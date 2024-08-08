@@ -18,6 +18,7 @@ class ContactController extends Controller
             'user_id' => $user->id,
             'name' => $request->name,
             'whatsapp' => $request->whatsapp,
+            'country_code' => "62",
             'email' => $request->email,
             'groups' => null,
         ]);
