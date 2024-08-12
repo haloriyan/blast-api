@@ -39,7 +39,7 @@ class BroadcastController extends Controller
             'device_id' => $request->device_id,
             'group_id' => $group->id,
             'title' => $request->title,
-            'content' => $request->content,
+            'content' => $request->content, 
             'delay_time' => $request->delay_time,
             'group_member' => $group->members->count(),
         ];

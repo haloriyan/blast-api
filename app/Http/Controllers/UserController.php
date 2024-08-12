@@ -52,6 +52,7 @@ class UserController extends Controller
                     'at' => $at,
                     'role' => "user",
                     'requested_to_be_host' => false,
+                    'token' => Str::random(32),
                 ]);
             } else {
                 $status = 200;
@@ -124,9 +125,12 @@ class UserController extends Controller
         $user = User::where('token', $request->token)->first();
         $groups = Group::where('user_id', $user->id)->get();
         foreach ($groups as $g => $gr) {
-            $groups[$g]->members_count = GroupMember::where('group_id', $gr->id)->get(['id'])->count();
-            $lm = GroupMember::where('group_id', $gr->id)->with(['contact'])->orderBy('created_at', 'DESC')->first();
-            $groups[$g]->latest_member = $lm->contact;
+            $membersCount = GroupMember::where('group_id', $gr->id)->get(['id'])->count();
+            $groups[$g]->members_count = $membersCount;
+            if ($membersCount > 0) {
+                $lm = GroupMember::where('group_id', $gr->id)->with(['contact'])->orderBy('created_at', 'DESC')->first();
+                $groups[$g]->latest_member = $lm->contact;
+            }
         }
 
         return response()->json([
