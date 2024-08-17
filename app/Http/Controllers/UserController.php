@@ -63,6 +63,7 @@ class UserController extends Controller
                     'at' => $at,
                     'role' => "user",
                     'requested_to_be_host' => false,
+                    'is_connecting' => false,
                 ]);
             } else {
                 $status = 200;
@@ -365,6 +366,22 @@ class UserController extends Controller
         
         return response()->json([
             'purchases' => $purchases,
+        ]);
+    }
+    public function setConnecting(Request $request) {
+        $u = User::where('id', $request->id);
+        $u->update([
+            'is_connecting' => $request->status,
+        ]);
+
+        return response()->json(['ok']);
+    }
+    public function isConnecting(Request $request) {
+        $u = User::where('token', $request->token);
+        $user = $u->first(['id', 'is_connecting']);
+
+        return response()->json([
+            'status' => $user->is_connecting,
         ]);
     }
 }

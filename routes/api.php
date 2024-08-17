@@ -21,6 +21,8 @@ Route::group(['prefix' => "user"], function () {
     Route::post('group', [UserController::class, 'group']);
     Route::post('upgrade', [UserController::class, 'upgrade']);
     Route::post('upgrade-history', [UserController::class, 'upgradeHistory']);
+    Route::post('set-connecting', [UserController::class, 'setConnecting']);
+    Route::get('is-connecting', [UserController::class, 'isConnecting']);
 });
 
 Route::group(['prefix' => "admin"], function () {
