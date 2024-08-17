@@ -12,9 +12,11 @@ class DeviceController extends Controller
     public function mine(Request $request) {
         $user = User::where('token', $request->token)->first();
         $devices = UserDevice::where('user_id', $user->id)->get();
+        $can_add = UserController::getUserAbility($user, 'max_devices');
 
         return response()->json([
             'devices' => $devices,
+            'can_add' => $can_add,
         ]);
     }
     public function connect(Request $request) {

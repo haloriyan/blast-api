@@ -16,4 +16,7 @@ class Group extends Model
     public function members() {
         return $this->belongsToMany(Contact::class, 'group_members', 'group_id', 'contact_id');
     }
+    public function user() {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 }

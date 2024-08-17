@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Jobs\Coeg;
+use App\Jobs\KirimWa;
 use App\Models\Broadcast;
 use App\Models\BroadcastLog;
 use App\Models\Group;
@@ -24,10 +24,39 @@ class BroadcastController extends Controller
 
         return $response->body();
     }
-    public function getVars($string) {
+    public static function getVars($string) {
         $pattern = '/%([^%]*)%/';
         preg_match_all($pattern, $string, $matches);
         return $matches[1];
+    }
+    public static function blast($broadcast, $group = null, $device = null) {
+        Log::info("Broadcasting : " . $broadcast->title);
+        if ($group == null) {
+            $group = $broadcast->group;
+        }
+        if ($device == null) {
+            $device = $broadcast->device;
+        }
+        foreach ($group->members as $member) {
+            $theContent = $broadcast->content;
+            $vars = self::getVars($theContent);
+            $templates = [
+                'contact' => $member,
+                'group' => $group
+            ];
+
+            foreach ($vars as $var) {
+                $v = explode(".", $var);
+                $theContent = str_replace("%".$var."%", $templates[$v[0]]->{$v[1]}, $theContent);
+            }
+
+            KirimWa::dispatch([
+                'broadcast' => $broadcast,
+                'destination' => $member,
+                'device' => $device,
+                'message' => $theContent,
+            ]);
+        }
     }
     public function send(Request $request) {
         $user = User::where('token', $request->token)->first();
@@ -59,28 +88,9 @@ class BroadcastController extends Controller
 
         $saveData = Broadcast::create($toSave);
 
-        foreach ($group->members as $member) {
-            $theContent = $request->content;
-            $vars = $this->getVars($theContent);
-            $templates = [
-                'contact' => $member,
-                'group' => $group
-            ];
-
-            foreach ($vars as $var) {
-                $v = explode(".", $var);
-                $theContent = str_replace("%".$var."%", $templates[$v[0]]->{$v[1]}, $theContent);
-            }
-
-            Coeg::dispatch([
-                'broadcast' => $saveData,
-                'destination' => $member,
-                'device' => $device,
-                'message' => $theContent,
-            ]);
+        if ($request->delivery_time == "PROCESSING") {
+            self::blast($saveData, $group, $device);
         }
-
-        // Artisan::call('queue:work');
 
         return response()->json([
             'ok'
@@ -97,5 +107,17 @@ class BroadcastController extends Controller
         $logs = BroadcastLog::where('broadcast_id', $id)->orderBy('created_at', 'DESC')->with(['contact'])->paginate(50);
 
         return response()->json(['logs' => $logs]);
+    }
+    public function sendNow($id, Request $request) {
+        $bc = Broadcast::where('id', $id);
+        $broadcast = $bc->with(['device', 'group'])->first();
+        $group = $broadcast->group;
+        $device = $broadcast->device;
+
+        $bc->update(['delivery_status' => "PROCESSING"]);
+        
+        self::blast($broadcast, $group, $device);
+
+        return response()->json(['ok']);
     }
 }

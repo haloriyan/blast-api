@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->bigInteger('user_id')->unsigned()->index();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->bigInteger('device_id')->unsigned()->index();
-            $table->foreign('device_id')->references('id')->on('user_devices')->onDelete('cascade');
+            $table->bigInteger('device_id')->unsigned()->index()->nullable();
+            $table->foreign('device_id')->references('id')->on('user_devices')->onDelete('set null');
             $table->bigInteger('group_id')->unsigned()->index();
             $table->foreign('group_id')->references('id')->on('groups')->onDelete('cascade');
             

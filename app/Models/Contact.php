@@ -16,4 +16,7 @@ class Contact extends Model
     public function groupsJoined() {
         return $this->belongsToMany(Group::class, 'group_members', 'contact_id', 'group_id');
     }
+    public function user() {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 }
